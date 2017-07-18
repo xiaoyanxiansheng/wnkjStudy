@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MsgBase : MonoBehaviour {
+public class MsgBase{
+    public ushort msgId;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public ManagerID GetManager()                                      
+    {
+        return (ManagerID)(msgId - msgId % FrameTool.MagSpan);
+    }
+
+    public MsgBase(ushort temMsg)
+    {
+        msgId = temMsg;
+    }
 }

@@ -61,6 +61,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Frame\FrameTool.cs" />
+    <Compile Include="Assets\Frame\ManagerBase.cs" />
+    <Compile Include="Assets\Frame\MonoBase.cs" />
     <Compile Include="Assets\Frame\MsgBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
