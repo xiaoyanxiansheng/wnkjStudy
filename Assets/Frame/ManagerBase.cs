@@ -87,4 +87,22 @@ public class ManagerBase:MonoBase {
             }
         }
     }
+
+    public override void ProcessEvent(MsgBase tmpMsg)
+    {
+        if (!eventTree.ContainsKey(tmpMsg.msgId))
+        {
+            Debug.Log("ProcessEvent is error manager msgId " + tmpMsg.GetManager() + "===" + tmpMsg.msgId);
+        }
+        else
+        {
+            EvenNode node = eventTree[tmpMsg.msgId];
+            do
+            {
+                node.data.ProcessEvent(tmpMsg);
+                node = node.next;
+            }
+            while (node != null);
+        }
+    }
 }
