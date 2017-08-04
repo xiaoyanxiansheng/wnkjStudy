@@ -42,4 +42,9 @@ public class MsgCenter : MonoBase {
 	void Update () {
 	
 	}
+
+    public override void ProcessEvent(MsgBase tmpMsg)
+    {
+        // throw new System.NotImplementedException();
+    }
 }
