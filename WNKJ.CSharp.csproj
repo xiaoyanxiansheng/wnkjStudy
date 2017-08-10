@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Web v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>WebPlayer:6</UnityBuildTarget>
     <UnityVersion>5.3.6p7</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -62,10 +64,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Frame\Asset\IABLoader.cs" />
+    <Compile Include="Assets\Frame\Asset\IABLoaderManager.cs" />
     <Compile Include="Assets\Frame\Asset\IABManager.cs" />
     <Compile Include="Assets\Frame\Asset\IABManifestLoader.cs" />
     <Compile Include="Assets\Frame\Asset\IABRelation.cs" />
     <Compile Include="Assets\Frame\Asset\IABResLoader.cs" />
+    <Compile Include="Assets\Frame\Asset\IABScenceManager.cs" />
+    <Compile Include="Assets\Frame\Asset\IABTools.cs" />
     <Compile Include="Assets\Frame\FrameTool.cs" />
     <Compile Include="Assets\Frame\Manager\MsgCenter.cs" />
     <Compile Include="Assets\Frame\Manager\UIManager.cs" />

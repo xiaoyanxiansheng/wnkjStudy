@@ -14,7 +14,8 @@ public class IABManifestLoader{
     public IABManifestLoader()
     {
         assetBundleManifest = null;
-        manifestPath = null;
+        // TODO 直接定义就可以了
+        manifestPath = IABTools.GetAssetBundlePath();
         isLoadFinish = false;
         manifestLoader = null;
     }

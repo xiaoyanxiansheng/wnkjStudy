@@ -14,6 +14,16 @@ public class IABRelation{
 
     private LoaderProgress progress;
 
+    public string GetBundleName()
+    {
+        return theBundleName;
+    }
+
+    public List<string> GetDepence()
+    {
+        return depenceBundleList;
+    }
+
     public IABRelation()
     {
         depenceBundleList = new List<string>();
@@ -30,12 +40,14 @@ public class IABRelation{
         return refrenceBundleList;
     }
 
-    public void RemoveRefrence(string bundleName)
+    public bool RemoveRefrence(string bundleName)
     {
+        bool isRemove = false;
         for (int i = 0; i < refrenceBundleList.Count; i++)
         {
             if (refrenceBundleList[i].Equals(bundleName))
             {
+                isRemove = true;
                 refrenceBundleList.RemoveAt(i);
                 break;
             }
@@ -43,6 +55,7 @@ public class IABRelation{
         if (refrenceBundleList.Count == 0)
             Dispose();
 
+        return isRemove;
     }
 
     public void SetDepence(string[] depence)
@@ -50,16 +63,17 @@ public class IABRelation{
         depenceBundleList.AddRange(depence);
     }
 
-    public void RemoveDepence(string bundleName)
+    public bool RemoveDepence(string bundleName)
     {
         for (int i = 0; i < depenceBundleList.Count; i++)
         {
             if (depenceBundleList[i].Equals(bundleName))
             {
                 depenceBundleList.RemoveAt(i);
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     private bool isLoadFinish = false;

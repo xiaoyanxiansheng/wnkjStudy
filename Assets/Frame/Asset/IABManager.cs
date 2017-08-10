@@ -309,4 +309,52 @@ public class IABManager{
 
         yield return loader.LoadAssetBundle();
     }
+
+    // TODO 这里不大理解
+    public void DisposeBundle(string bundleName)
+    {
+        if (aBRelationList.ContainsKey(bundleName))
+        {
+            IABRelation iABRelation = aBRelationList[bundleName];
+            List<string> refrences = iABRelation.GetDepence();
+            for (int i = 0; i < refrences.Count; i++)
+            {
+                if (aBRelationList.ContainsKey(refrences[i]))
+                {
+                    IABRelation refrence = aBRelationList[refrences[i]];
+                    if (refrence.RemoveRefrence(bundleName))
+                    {
+                        DisposeBundle(refrence.getBundleName());
+                    }
+                }
+            }
+
+            if (iABRelation.GetRefrenceBundleList().Count == 0)
+            {
+                iABRelation.Dispose();
+                aBRelationList.Remove(bundleName);
+            }
+        }
+    }
+
+    // TODO 如果是卸载bundle加资源 可以使用：UnLoadAsset(true)？
+    public void DisposeAllBundleAndRes()
+    {
+        DisposeAllObj();
+        DisposeAllBundle();
+    }
+
+    public void DisposeAllBundle()
+    {
+        List<string> keys = new List<string>();
+
+        keys.AddRange(aBRelationList.Keys);
+
+        for (int i = 0; i < aBRelationList.Count; i++)
+        {
+            IABRelation iABRelation = aBRelationList[keys[i]];
+            iABRelation.Dispose();
+        }
+        aBRelationList.Clear();
+    }
 }

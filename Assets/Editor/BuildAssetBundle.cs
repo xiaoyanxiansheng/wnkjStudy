@@ -6,7 +6,8 @@ public class BuildAssetBundle : MonoBehaviour {
     [MenuItem("Custom Editor/Create AssetBundles Main")]
     static void CreateAssetbundlesMain()
     {
-        BuildPipeline.BuildAssetBundles("Assets/StreamingAssets", BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows);
+        string path = IABTools.GetAssetBundlePath();
+        BuildPipeline.BuildAssetBundles(path, BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows);
         AssetDatabase.Refresh();
     }
 }
