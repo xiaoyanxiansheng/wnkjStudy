@@ -1,0 +1,14 @@
+ManifestFileVersion: 0
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: cubetest1
+      Dependencies:
+        Dependency_0: tex1
+    Info_1:
+      Name: tex1
+      Dependencies: {}
+    Info_2:
+      Name: cubetest2
+      Dependencies:
+        Dependency_0: tex1

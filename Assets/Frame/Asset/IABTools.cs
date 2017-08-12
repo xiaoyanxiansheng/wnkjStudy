@@ -32,11 +32,30 @@ public class IABTools{
         return tmpPath;
     }
 
-    public static string GetAssetBundlePath(){
-        string platFolder = GetPlatformFoldName(Application.platform);
-
-        string allPath = Path.Combine(GetAppFilePath(), platFolder);
-
+    public static string GetAssetBundlePath(string bundleName){
+        string allPath = GetAppFilePath();
+        allPath = Path.Combine(allPath, bundleName);
+        allPath = ToFilePath(PathTanslate(allPath));
         return allPath;
+    }
+
+    public static string GetBaseBundlePath() 
+    {
+        return GetAppFilePath();
+    }
+
+    public static string GetManifestBundlePath() 
+    {
+        return GetAssetBundlePath("StreamingAssets");
+    }
+
+    public static string ToFilePath(string path)
+    {
+        return "file://" + IABTools.PathTanslate(path);
+    }
+
+    public static string PathTanslate(string path)
+    {
+        return path.Replace("\\","/");
     }
 }

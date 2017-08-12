@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class IABResLoader:IDisposable{
     
-    private List<UnityEngine.Object> loadResObjs;
+    private List<UnityEngine.Object> loadResObjs = new List<UnityEngine.Object>();
 
     private IABLoader iABLoader;
 

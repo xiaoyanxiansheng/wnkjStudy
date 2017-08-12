@@ -15,13 +15,14 @@ public class IABManifestLoader{
     {
         assetBundleManifest = null;
         // TODO 直接定义就可以了
-        manifestPath = IABTools.GetAssetBundlePath();
+        manifestPath = IABTools.GetManifestBundlePath();
         isLoadFinish = false;
         manifestLoader = null;
     }
 
     public IEnumerator LoadManifest()
     {
+        Debug.Log(manifestPath);
         WWW manifestWWW = new WWW(manifestPath);
         yield return manifestWWW;
 

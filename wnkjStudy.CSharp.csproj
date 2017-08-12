@@ -56,17 +56,32 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Frame\Asset\IABLoader.cs" />
+    <Compile Include="Assets\Frame\Asset\IABLoaderManager.cs" />
+    <Compile Include="Assets\Frame\Asset\IABManager.cs" />
+    <Compile Include="Assets\Frame\Asset\IABManifestLoader.cs" />
+    <Compile Include="Assets\Frame\Asset\IABResLoader.cs" />
+    <Compile Include="Assets\Frame\Asset\IABScenceManager.cs" />
+    <Compile Include="Assets\Frame\Asset\IABTools.cs" />
+    <Compile Include="Assets\Frame\Asset\NativeResLoad.cs" />
     <Compile Include="Assets\Frame\FrameTool.cs" />
     <Compile Include="Assets\Frame\Manager\MsgCenter.cs" />
     <Compile Include="Assets\Frame\Manager\UIManager.cs" />
     <Compile Include="Assets\Frame\ManagerBase.cs" />
     <Compile Include="Assets\Frame\MonoBase.cs" />
     <Compile Include="Assets\Frame\MsgBase.cs" />
+    <Compile Include="Assets\Scripts\WWWTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>

@@ -16,9 +16,46 @@ public class IABLoaderManager : MonoBehaviour {
     }
 
 
-    public IEnumerator LoadBundle(string bundleName,LoadAssetBundleCallBack call)
+    public IEnumerator LoadBundleCore(string bundleName,LoadAssetBundleCallBack call)
     {
-        yield return iABManager.LoadBundle(bundleName, call);
+        yield return iABManager.LoadBundle(bundleName);
+        call(bundleName);
+    }
+
+    public IEnumerator LoadBundleAssetCore(string bundleName, string resName, LoadAssetBundleObjCallBack call)
+    {
+        yield return iABManager.LoadBundle(bundleName);
+        Object resObj = iABManager.GetBunldeRes(bundleName, resName);
+        call(resObj);
+    }
+
+    public void BundleCall(string bundleName)
+    {
+        Debug.Log("LoadBundle 4 " + bundleName);
+    }
+
+    /// <summary>
+    /// 异步加载开启一个协成
+    /// </summary>
+    /// <param name="bundleName"></param>
+    /// <param name="call"></param>
+    public void LoadBundle(string bundleName,LoadAssetBundleCallBack call)
+    {
+        StartCoroutine(LoadBundleCore(bundleName, call));
+    }
+
+    public void LoadBundleAsset(string bundleName, string resName, LoadAssetBundleObjCallBack call)
+    {
+        Object resObj = iABManager.GetBunldeRes(bundleName, resName);
+        if (resObj != null)
+        {
+            call(resObj);
+        }
+        else
+        {
+            // 加载bundle
+            StartCoroutine(LoadBundleAssetCore(bundleName, resName, call)); 
+        }
     }
 
     public Object GetBunldeRes(string bundleName, string resName)

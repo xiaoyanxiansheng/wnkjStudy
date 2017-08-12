@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public delegate void LoadAssetBundleCallBack(string bundleName);
 
+public delegate void LoadAssetBundleObjCallBack(Object resObj);
+
 public class IABManager{
 
     // 所有的bundle
@@ -107,19 +109,6 @@ public class IABManager{
         }
     }
 
-    // TODO 并没有地方引用
-    //public void LoadAssetBundle(string bundleName, LoaderProgress progress, LoadAssetBundleCallBack callback)
-    //{
-    //    if (!aBRelationList.ContainsKey(bundleName))
-    //    {
-    //        IABLoader iABLoader = new IABLoader(bundleName, progress);
-
-    //        aBRelationList.Add(bundleName, iABLoader);
-
-    //        callback(scenceName, bundleName);
-    //    }
-    //}
-
     public string[] GetDepences(string bundleName)
     {
         return IABManifestLoader.Instance.GetDepences(bundleName);
@@ -144,15 +133,18 @@ public class IABManager{
         }
     }
 
-    public IEnumerator LoadBundle(string bundleName,LoadAssetBundleCallBack call)
+    public IEnumerator LoadBundle(string bundleName)
     {
-        while (!IABManifestLoader.Instance.IsLoadFinish())
+        IABLoader iABLoader;
+        if (aBRelationList.ContainsKey(bundleName))
         {
-            yield return null;
+            iABLoader = aBRelationList[bundleName];
         }
-
-        // 需要加载的bundle
-        IABLoader iABLoader = aBRelationList[bundleName];
+        else
+        {
+            iABLoader = new IABLoader(bundleName);
+            aBRelationList.Add(bundleName, iABLoader);
+        }
         // 先加载依赖
         string[] depences = GetDepences(bundleName);
 
@@ -162,13 +154,10 @@ public class IABManager{
         {
             yield return LoadAssetBundleDepences(depences[i], bundleName);
         }
-
+        Debug.Log("LoadBundle depence " + iABLoader.BundleName);
         yield return iABLoader.LoadBundle();
-
-        call();
     }
 
-    // TODO 这里不大理解
     public void DisposeBundle(string bundleName)
     {
         if (aBRelationList.ContainsKey(bundleName))

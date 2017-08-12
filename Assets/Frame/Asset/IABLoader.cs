@@ -49,12 +49,9 @@ public class IABLoader:IDisposable{
 
     public IEnumerator LoadBundle()
     {
-        WWW loader = new WWW(bundleName);
+        string bundleNamePath = IABTools.GetAssetBundlePath(bundleName);
+        WWW loader = new WWW(bundleNamePath);
         loadState = ELoadState.loading;
-        while (!loader.isDone)
-        {
-            bundleLoadProgress = loader.progress;
-        }
         yield return loader;
 
         assetBundle = loader.assetBundle;
