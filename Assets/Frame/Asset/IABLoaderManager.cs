@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class IABLoaderManager : MonoBehaviour {
 
     public static IABLoaderManager Instance;
-    IABScenceManager iABScenceManager;
+    IABManager iABManager;
     void Awake()
     {
         Instance = this;
@@ -12,59 +12,54 @@ public class IABLoaderManager : MonoBehaviour {
         // 加载manifest
         StartCoroutine(IABManifestLoader.Instance.LoadManifest());
 
-        iABScenceManager = new IABScenceManager("testScence");
-    }
-    
-    // TODO 这里没有理解
-    public void LoadCallBack(string scenceName, string bundleName)
-    {
-        StartCoroutine(iABScenceManager.LoadAssetBundle(bundleName));
+        iABManager = new IABManager();
     }
 
-    public void LoadAsset(string scenceName, string bundleName, LoaderProgress progress)
+
+    public IEnumerator LoadBundle(string bundleName,LoadAssetBundleCallBack call)
     {
-        iABScenceManager.LoadAsset(bundleName,progress,LoadCallBack);
+        yield return iABManager.LoadBundle(bundleName, call);
     }
 
-    public Object GetSingleResources(string scenceName, string bundleName, string resName)
+    public Object GetBunldeRes(string bundleName, string resName)
     {
-        return iABScenceManager.GetSingleResources(bundleName,resName);
+        return iABManager.GetBunldeRes(bundleName, resName);
     }
 
-    public Object[] GetMultiResources(string scenceName, string bundleName)
+    public Object[] GetMultiResources(string bundleName,string resName)
     {
-        return iABScenceManager.GetMultiResource(bundleName, bundleName);
+        return iABManager.GetBunldeMultiRes(bundleName, resName);
     }
 
     // 释放每一个资源
-    public void UnLoadResObj(string scenceName, string bundleName, string res)
+    public void UnLoadResObj(string bundleName, Object resObj)
     {
-        iABScenceManager.DisposeBundleResObj(bundleName, res);
+        iABManager.DisposeRes(bundleName, resObj);
     }
     // 释放整个包
-    public void UnLoadBundleObj(string scenceName, string bundleName)
+    public void UnLoadBundle(string bundleName)
     {
-        iABScenceManager.DisposeBundleRes(bundleName);
+        iABManager.DisposeBundle(bundleName);
     }
     // 释放所有资源
-    public void UnLoadAllResObjs(string scenceName)
+    public void UnLoadAllResObjs()
     {
-        iABScenceManager.DisposeAllObj();
+        iABManager.DisposeAllRes();
     }
     // 释放bundle包
-    public void UnLoadAssetBundle(string scenceName, string bundleName)
+    public void UnLoadAssetBundle(string bundleName)
     {
-        iABScenceManager.DisposeBundle(bundleName);
+        iABManager.DisposeBundle(bundleName);
     }
 
-    public void UnLoadAllAssetBundle(string scenceName, string bundleName)
+    public void UnLoadAllAssetBundle(string bundleName)
     {
-        iABScenceManager.DisposeAllBundle();
+        iABManager.DisposeAllBundle();
     }
 
-    public void UnLoadAllAssetBundleAndRes(string scenceName, string bundleName)
+    public void UnLoadAllAssetBundleAndRes(string bundleName)
     {
-        iABScenceManager.DisposeAllBundleAndRes();
+        iABManager.DisposeAllBundleAndRes();
     }
 
     void OnDestroy()
@@ -72,19 +67,19 @@ public class IABLoaderManager : MonoBehaviour {
         System.GC.Collect();
     }
 
-    public void DebugAllAssetBundle(string scenceName)
+    public void DebugAllAssetBundle()
     {
-        iABScenceManager.DebugAllAsset();
+        iABManager.DebugAllAsset();
     }
 
-    public bool IsLoadingFinish(string scenceName, string bundleName)
+    public ELoadState IsLoadingFinish(string bundleName)
     {
-        return iABScenceManager.IsLoadingFinish(bundleName);
+        return iABManager.BundleLoadState(bundleName);
     }
 
-    public bool IsLoadingAssetBundle(string scenceName, string bundleName)
+    public bool IsLoadingAssetBundle(string bundleName)
     {
-        return iABScenceManager.IsLoadingAssetBundle(bundleName);
+        return iABManager.IsLoadAssetBundle(bundleName);
     }
 
 	// Use this for initialization

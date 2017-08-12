@@ -3,11 +3,22 @@ using System.Collections;
 
 public class WWWTest : MonoBehaviour {
 
-    public string url = "file://D:/unityWork/WNKJ/Assets/StreamingAssets/cubetest1";
+    private string url = "file://D:/unityWork/WNKJ/Assets/StreamingAssets/cubetest1";
+
+    public string bundleName = "cubetest1";
+
     private WWW www = null;
+
+    public void BundleCall(string bundleName)
+    {
+        Debug.Log("aaaaaaaaaaaaa");
+    }
+
     void Start()
     {
-        StartCoroutine(StartWWW());
+        //StartCoroutine(StartWWW());
+
+        IABLoaderManager.Instance.LoadBundle(bundleName, BundleCall);
     }
 
     IEnumerator StartWWW()
@@ -27,6 +38,8 @@ public class WWWTest : MonoBehaviour {
         assetBundle.Unload(true);
         www.Dispose();
     }
+
+    
 
     void Update()
     {

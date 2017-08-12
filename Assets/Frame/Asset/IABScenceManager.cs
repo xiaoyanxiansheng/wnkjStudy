@@ -5,19 +5,19 @@ public class IABScenceManager{
 
     IABManager aBManager;
 
-    public IABScenceManager(string scenceName)
+    public IABScenceManager()
     {
-        aBManager = new IABManager(scenceName);
+        aBManager = new IABManager();
     }
 
     private Dictionary<string, string> allAsset = new Dictionary<string, string>();
 
-    public void LoadAsset(string bundleName, LoaderProgress progress, LoadAssetBundleCallBack callBack)
+    public void LoadAsset(string bundleName, LoadAssetBundleCallBack callBack)
     {
         if (allAsset.ContainsKey(bundleName))
         {
             string tmpValue = allAsset[bundleName];
-            aBManager.LoadAssetBundle(tmpValue, progress, callBack);
+            aBManager.LoadBundle(tmpValue);
         }
         else
         {
@@ -27,14 +27,14 @@ public class IABScenceManager{
 
     public IEnumerator LoadAssetBundle(string bundleName)
     {
-        yield return aBManager.LoadAssetBundle(bundleName);
+        yield return aBManager.LoadBundle(bundleName);
     }
 
     public Object GetSingleResources(string bundleName, string resName)
     {
         if (allAsset.ContainsKey(bundleName))
         {
-            return aBManager.GetSingleResource(allAsset[bundleName], resName);
+            return aBManager.GetBunldeRes(allAsset[bundleName], resName);
         }
         else
         {
@@ -46,7 +46,7 @@ public class IABScenceManager{
     {
         if (allAsset.ContainsKey(bundleName))
         {
-            return aBManager.GetMultiResource(allAsset[bundleName], resName);
+            return aBManager.GetBunldeMultiRes(allAsset[bundleName], resName);
         }
         else
         {
@@ -54,25 +54,25 @@ public class IABScenceManager{
         }
     }
 
-    public void DisposeBundleResObj(string bundleName,string res)
+    public void DisposeBundleResObj(string bundleName,Object resObj)
     {
         if (allAsset.ContainsKey(bundleName))
         {
-            aBManager.DisposeResObj(allAsset[bundleName], res);
+            aBManager.DisposeRes(allAsset[bundleName], resObj);
         }
     }
 
-    public void DisposeBundleRes(string bundleName)
+    public void DisposeBundleAllRes(string bundleName)
     {
         if (allAsset.ContainsKey(bundleName))
         {
-            aBManager.DisposeResObj(allAsset[bundleName]);
+            aBManager.DisposeBundleAllRes(allAsset[bundleName]);
         }
     }
 
-    public void DisposeAllObj()
+    public void DisposeAllRes()
     {
-        aBManager.DisposeAllObj();
+        aBManager.DisposeAllRes();
     }
 
     public void DisposeBundle(string bundleName)
@@ -86,7 +86,6 @@ public class IABScenceManager{
     public void DisposeAllBundle()
     {
         aBManager.DisposeAllBundle();
-        allAsset.Clear();
     }
 
     public void DisposeAllBundleAndRes()
@@ -106,13 +105,9 @@ public class IABScenceManager{
         }
     }
 
-    public bool IsLoadingFinish(string bundleName)
+    public ELoadState BundleLoadState(string bundleName)
     {
-        if (allAsset.ContainsKey(bundleName))
-        {
-            return aBManager.IsLoadFinish(bundleName);
-        }
-        return false;
+        return aBManager.BundleLoadState(bundleName);
     }
 
     public bool IsLoadingAssetBundle(string bundleName)

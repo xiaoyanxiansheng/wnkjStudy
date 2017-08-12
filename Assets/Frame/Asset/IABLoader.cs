@@ -1,95 +1,232 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 // 每帧回调
 public delegate void LoaderProgress(string bundleName,float progress);
 // 加载完成回调
 public delegate void LoadFinish(string bundle);
 
+/// <summary>
+/// bundle的加载状态
+/// </summary>
+public enum ELoadState
+{
+    notLoad,
+    loading,
+    loadFinish
+}
+
 public class IABLoader:IDisposable{
 
     private string bundleName;
 
-    private string commonBundlePath;
+    private AssetBundle assetBundle;
+    
+    private LoadFinish loadFinishCall;
 
-    private WWW commonLoader;
+    private IABResLoader iABResLoader;
 
-    private float commonResLoaderProgress;
+    private ELoadState loadState;
 
-    private LoaderProgress loaderProgress;
+    private float bundleLoadProgress;
 
-    private LoadFinish loadFinish;
+    // 依赖关系(其实并不需要存储依赖关系)
+    private List<string> depenceBundleList;
+    // 引用关系
+    private List<string> refrenceBundleList;
 
-    private IABResLoader iABResLoaser;
-
-    public IABLoader(LoaderProgress tmpLoaderProgress, LoadFinish tmpLoadFinish)
+    public IABLoader(string tmpBundleName, LoadFinish tmpLoadFinishCall = null)
     {
-        commonBundlePath = "";
-        bundleName = "";
-        commonResLoaderProgress = 0;
-        loaderProgress = tmpLoaderProgress;
-        loadFinish = tmpLoadFinish;
+        bundleLoadProgress = 0;
+        bundleName = tmpBundleName;
+        loadFinishCall = tmpLoadFinishCall;
+
+        depenceBundleList = new List<string>();
+        refrenceBundleList = new List<string>();
     }
 
-    public void SetBundleName(string TmpBundleName)
+    public IEnumerator LoadBundle()
     {
-        bundleName = TmpBundleName;
-    }
-
-    public void LoadResources(string path)
-    {
-        commonBundlePath = path;
-    }
-
-    public IEnumerator CommonLoad()
-    {
-        commonLoader = new WWW(commonBundlePath);
-
-        while (!commonLoader.isDone)
+        WWW loader = new WWW(bundleName);
+        loadState = ELoadState.loading;
+        while (!loader.isDone)
         {
-            commonResLoaderProgress = commonLoader.progress;
-            loaderProgress(bundleName, commonResLoaderProgress);
+            bundleLoadProgress = loader.progress;
         }
-        yield return commonLoader;
-        
-        loaderProgress(bundleName, commonResLoaderProgress);
-        loadFinish(bundleName);
+        yield return loader;
 
-        iABResLoaser = new IABResLoader(commonLoader.assetBundle);
+        assetBundle = loader.assetBundle;
 
-        commonLoader.Dispose();
+        bundleLoadProgress = loader.progress;
+        loadState = ELoadState.loadFinish;
+
+        if (loadFinishCall != null)
+        {
+            loadFinishCall(bundleName);
+        }
+
+        // 资源加载器
+        iABResLoader = new IABResLoader(this);
+
+        loader.Dispose();
+        loader = null;
     }
 
-    public UnityEngine.Object GetResource(string name)
+    /// <summary>
+    /// 获取bundle加载资源
+    /// </summary>
+    /// <param name="resName"></param>
+    /// <returns></returns>
+    public UnityEngine.Object GetBundleRes(string resName)
     {
-        return iABResLoaser[name];
+        return iABResLoader.GetBundleRes(resName);
+    }
+    /// <summary>
+    /// 获取bundle加载资源 不存在则加载
+    /// </summary>
+    /// <param name="resName"></param>
+    /// <returns></returns>
+    public UnityEngine.Object GetBundleResAndNotLoad(string resName)
+    {
+        UnityEngine.Object res = iABResLoader.GetBundleRes(resName);
+        if (res == null)
+        {
+            iABResLoader.LoadBundleRes(resName);
+            return iABResLoader.GetBundleRes(resName);
+        }
+        else
+        {
+            return res;
+        }
     }
 
-    public UnityEngine.Object[] GetMutiRersource(string name)
+    public UnityEngine.Object[] GetBundleMultiRes(string resName)
     {
-        return iABResLoaser.LoadResources(name);
+        return iABResLoader.LoadAssetWithSubAssets(resName);
+    }
+
+    public void AddRefrence(string bundleName)
+    {
+        refrenceBundleList.Add(bundleName);
+    }
+
+    public bool RemoveRefrence(string bundleName)
+    {
+        bool isRemove = false;
+        for (int i = 0; i < refrenceBundleList.Count; i++)
+        {
+            if (refrenceBundleList[i].Equals(bundleName))
+            {
+                isRemove = true;
+                refrenceBundleList.RemoveAt(i);
+                break;
+            }
+        }
+        if (refrenceBundleList.Count == 0)
+            Dispose();
+
+        return isRemove;
+    }
+
+    public void BundleLoadFinish(string bundleName)
+    {
+        loadState = ELoadState.loadFinish;
     }
 
     public void DebugLoader()
     {
-        iABResLoaser.DebugAllRes(); 
+        iABResLoader.DebugAllRes(); 
     }
 
-    // 卸载assetbundle
     public void Dispose()
     {
-        if (iABResLoaser!=null)
+        // 这里默认不卸载加载出来的资源
+        UnLoadBundle();
+    }
+
+    // 卸载bundle
+    public void UnLoadBundle(bool unloadAllLoadedObjects = false)
+    {
+        if (assetBundle!=null)
         {
-            iABResLoaser.Dispose();
-            iABResLoaser = null;
+            assetBundle.Unload(unloadAllLoadedObjects);
+            assetBundle = null;
         }
     }
 
     // 卸载assetbundle load出来的资源
-    public void UnLoadAssetRes(UnityEngine.Object tmpObj)
+    public void UnLoadRes(UnityEngine.Object tmpObj)
     {
-        if (iABResLoaser != null)
-            iABResLoaser.UnLoadRes(tmpObj);
+        iABResLoader.UnLoadRes(tmpObj);
+    }
+
+    public void UnLoadAllRes()
+    {
+        iABResLoader.UnLoadAllRes();
+    }
+
+    public void UnLoadBundleAndRes()
+    {
+        UnLoadAllRes();
+        UnLoadBundle();
+    }
+
+    public float BundleLoadProgress
+    {
+        get
+        {
+            return bundleLoadProgress;
+        }
+    }
+
+    public string BundleName
+    {
+        get
+        {
+            return bundleName;
+        }
+    }
+
+    public AssetBundle _AssetBundle
+    {
+        get
+        {
+            return assetBundle;
+        }
+    }
+
+    public List<string> GetDepences()
+    {
+        return depenceBundleList;
+    }
+
+    public void SetDepence(string[] depence)
+    {
+        depenceBundleList.AddRange(depence);
+    }
+
+    public ELoadState LoadState
+    {
+        get
+        {
+            return loadState;
+        }
+    }
+
+    public List<string> GetDepence()
+    {
+        return depenceBundleList;
+    }
+
+    public List<string> GetRefrence()
+    {
+        return refrenceBundleList;
+    }
+
+    public void DebugAsset()
+    {
+        iABResLoader.DebugAllRes();
     }
 }

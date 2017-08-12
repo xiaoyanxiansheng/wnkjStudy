@@ -2,117 +2,28 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public delegate void LoadAssetBundleCallBack(string scenceName,string bundleName);
-
-// 加载的资源
-public class AssetObj
-{
-    public List<Object> objs;
-
-    public AssetObj(params Object[] tmpObj)
-    {
-        objs = new List<Object>();
-
-        objs.AddRange(tmpObj);
-    }
-
-    // TODO 释放接口偏多
-    public void ReleaseObj()
-    {
-        for (int i = 0; i < objs.Count; i++)
-        {
-            Resources.UnloadAsset(objs[i]);
-        }
-    }
-}
-
-// 一个bundle中的资源
-public class AssetResObj
-{
-    public Dictionary<string, AssetObj> resObjs;
-
-    public AssetResObj(string name, AssetObj tmp)
-    {
-        resObjs = new Dictionary<string, AssetObj>();
-        resObjs.Add(name,tmp);
-    }
-
-    public void AddResObj(string name, AssetObj tmpObj)
-    {
-        resObjs.Add(name, tmpObj);
-    }
-
-    public void ReleaseAllResObj()
-    {
-        List<string> keys = new List<string>();
-
-        keys.AddRange(resObjs.Keys);
-
-        for (int i = 0; i < keys.Count; i++)
-        {
-            ReleaseResObj(keys[i]);
-        }
-    }
-
-    public void ReleaseResObj(string name)
-    {
-        if (resObjs.ContainsKey(name))
-        {
-            AssetObj tmp = resObjs[name];
-            tmp.ReleaseObj();
-        }
-        else
-        {
-            Debug.Log("resObjs not key name " + name);
-        }
-    }
-
-    public List<Object> GetResObj(string name)
-    {
-        if (resObjs.ContainsKey(name))
-        {
-            return resObjs[name].objs;
-        }
-        else
-        {
-            return null;
-        }
-    }
-}
+public delegate void LoadAssetBundleCallBack(string bundleName);
 
 public class IABManager{
 
     // 所有的bundle
-    Dictionary<string, IABRelation> aBRelationList = new Dictionary<string, IABRelation>();
+    Dictionary<string, IABLoader> aBRelationList = new Dictionary<string, IABLoader>();
 
-    // bundle和资源的对应关系
-    Dictionary<string, AssetResObj> Bundle2ResObjList = new Dictionary<string, AssetResObj>();
-
-    public void DebugAsset(string bundleName)
+    public IABManager()
     {
-        if (aBRelationList[bundleName] != null)
-        {
-            IABRelation iABRelation = aBRelationList[bundleName];
-            iABRelation.DebugAsset();
-        }
+
     }
 
-    private string scenceName;
-    public IABManager(string tmpName)
+    // bundle的加载状态
+    public ELoadState BundleLoadState(string bundleName)
     {
-        scenceName = tmpName;
-    }
-
-    // 资源是否加载完成
-    public bool IsLoadFinish(string bundleName)
-    {
-        if (aBRelationList[bundleName] != null)
+        ELoadState state = ELoadState.notLoad;
+        if (aBRelationList.ContainsKey(bundleName) != null)
         {
-            IABRelation iABRelation = aBRelationList[bundleName];
-            return iABRelation.IsloadFinish;
+            IABLoader iABLoader = aBRelationList[bundleName];
+            state = iABLoader.LoadState;
         }
-        Debug.Log("aBRelationList not " + bundleName);
-        return false;
+        return state;
     }
 
     // 资源是否加载
@@ -128,167 +39,112 @@ public class IABManager{
         }
     }
 
-    // TODO 这里逻辑写的有点混乱 获取某个加载资源
-    public Object GetSingleResource(string bundleName, string resName)
+    public Object GetBunldeRes(string bundleName, string resName)
     {
-        // 
-        if (Bundle2ResObjList.ContainsKey(bundleName))
-        {
-            AssetResObj tmpRes = Bundle2ResObjList[bundleName];
-
-            List<Object> tmpObj = tmpRes.GetResObj(resName);
-
-            if (tmpObj!=null) 
-            {
-                // TODO 不理解
-                return tmpObj[0];
-            }
-        }
-
+        Object asset = null;
         if (aBRelationList.ContainsKey(bundleName))
         {
-            IABRelation iABRelation = aBRelationList[bundleName];
-
-            Object tmpObj = iABRelation.GetResource(resName);
-
-            AssetObj tmpAssetObj = new AssetObj(tmpObj);
-
-            if (Bundle2ResObjList.ContainsKey(bundleName))
-            {
-                AssetResObj tmpRes = Bundle2ResObjList[bundleName];
-
-                tmpRes.AddResObj(resName, tmpAssetObj);
-            }
-            else
-            {
-                AssetResObj tmpRes = new AssetResObj(resName, tmpAssetObj);
-
-                Bundle2ResObjList.Add(bundleName, tmpRes);
-            }
-
-            return tmpObj;
+            IABLoader iABLoader = aBRelationList[bundleName];
+            asset = iABLoader.GetBundleResAndNotLoad(resName);
         }
         else
         {
-            return null;
+            // TODO 加载bundle 这里无法开启协程
         }
+
+        return asset;
     }
 
-    public Object[] GetMultiResource(string bundleName, string resName)
+    public Object[] GetBunldeMultiRes(string bundleName, string resName)
     {
-        // 
-        if (Bundle2ResObjList.ContainsKey(bundleName))
-        {
-            AssetResObj tmpRes = Bundle2ResObjList[bundleName];
-
-            List<Object> tmpObj = tmpRes.GetResObj(resName);
-
-            if (tmpObj != null)
-            {
-                // TODO 不理解
-                return tmpObj.ToArray();
-            }
-        }
-
+        Object[] asset = null;
         if (aBRelationList.ContainsKey(bundleName))
         {
-            IABRelation iABRelation = aBRelationList[bundleName];
-
-            Object[] tmpObj = iABRelation.GetMutiResource(resName);
-
-            AssetObj tmpAssetObj = new AssetObj(tmpObj);
-
-            if (Bundle2ResObjList.ContainsKey(bundleName))
-            {
-                AssetResObj tmpRes = Bundle2ResObjList[bundleName];
-
-                tmpRes.AddResObj(resName, tmpAssetObj);
-            }
-            else
-            {
-                AssetResObj tmpRes = new AssetResObj(resName, tmpAssetObj);
-
-                Bundle2ResObjList.Add(bundleName, tmpRes);
-            }
-
-            return tmpObj;
+            IABLoader iABLoader = aBRelationList[bundleName];
+            asset = iABLoader.GetBundleMultiRes(resName);
         }
         else
         {
-            return null;
+            // TODO 加载bundle 这里无法开启协程
         }
+
+        return asset;
     }
 
-    public void DisposeResObj(string bundleName,string resName)
+    /// <summary>
+    /// 释放bundle 加载出来的obj
+    /// </summary>
+    /// <param name="bundleName"></param>
+    /// <param name="resObj"></param>
+    public void DisposeRes(string bundleName,Object resObj)
     {
-        if (Bundle2ResObjList.ContainsKey(bundleName))
+        if (aBRelationList.ContainsKey(bundleName))
         {
-            AssetResObj tmpObj = Bundle2ResObjList[bundleName];
-            tmpObj.ReleaseResObj(resName);
+            IABLoader iABLoader = aBRelationList[bundleName];
+            iABLoader.UnLoadRes(resObj);
         }
     }
-
-    public void DisposeResObj(string bundleName)
+    /// <summary>
+    /// 释放bundle加载出来的所有obj
+    /// </summary>
+    /// <param name="bundleName"></param>
+    public void DisposeBundleAllRes(string bundleName)
     {
-        if (Bundle2ResObjList.ContainsKey(bundleName))
+        if (aBRelationList.ContainsKey(bundleName))
         {
-            AssetResObj tmpObj = Bundle2ResObjList[bundleName];
-            tmpObj.ReleaseAllResObj();
+            IABLoader iABLoader = aBRelationList[bundleName];
+            iABLoader.UnLoadAllRes();
         }
     }
 
-    public void DisposeAllObj()
+    public void DisposeAllRes()
     {
         List<string> keys = new List<string>();
-        keys.AddRange(Bundle2ResObjList.Keys);
+        keys.AddRange(aBRelationList.Keys);
         for (int i = 0; i < keys.Count; i++)
         {
-            DisposeResObj(keys[i]);
+            DisposeBundleAllRes(aBRelationList[keys[i]].BundleName);
         }
-        Bundle2ResObjList.Clear();
     }
-
 
     // TODO 并没有地方引用
-    public void LoadAssetBundle(string bundleName, LoaderProgress progress, LoadAssetBundleCallBack callback)
-    {
-        if (!aBRelationList.ContainsKey(bundleName))
-        {
-            IABRelation iABRelation = new IABRelation();
-            iABRelation.Inital(bundleName, progress);
+    //public void LoadAssetBundle(string bundleName, LoaderProgress progress, LoadAssetBundleCallBack callback)
+    //{
+    //    if (!aBRelationList.ContainsKey(bundleName))
+    //    {
+    //        IABLoader iABLoader = new IABLoader(bundleName, progress);
 
-            aBRelationList.Add(bundleName, iABRelation);
+    //        aBRelationList.Add(bundleName, iABLoader);
 
-            callback(scenceName, bundleName);
-        }
-    }
+    //        callback(scenceName, bundleName);
+    //    }
+    //}
 
-    string[] GetDepences(string bundleName)
+    public string[] GetDepences(string bundleName)
     {
         return IABManifestLoader.Instance.GetDepences(bundleName);
     }
 
-    public IEnumerator LoadAssetBundleDepences(string bundleName, string refrenceName, LoaderProgress progress)
+    public IEnumerator LoadAssetBundleDepences(string bundleName, string refrenceName)
     {
         if (!aBRelationList.ContainsKey(bundleName))
         {
-            IABRelation loader = new IABRelation();
-            loader.Inital(bundleName,progress);
+            IABLoader iABLoader = new IABLoader(bundleName);
 
-            loader.AddRefrence(refrenceName);
+            iABLoader.AddRefrence(refrenceName);
 
-            aBRelationList.Add(bundleName, loader);
+            aBRelationList.Add(bundleName, iABLoader);
 
-            yield return LoadAssetBundle(bundleName);
+            yield return LoadBundle(bundleName);
         }
         else
         {
-            IABRelation loader = aBRelationList[bundleName];
-            loader.AddRefrence(refrenceName);
+            IABLoader iABLoader = aBRelationList[bundleName];
+            iABLoader.AddRefrence(refrenceName);
         }
     }
 
-    public IEnumerator LoadAssetBundle(string bundleName)
+    public IEnumerator LoadBundle(string bundleName,LoadAssetBundleCallBack call)
     {
         while (!IABManifestLoader.Instance.IsLoadFinish())
         {
@@ -296,18 +152,20 @@ public class IABManager{
         }
 
         // 需要加载的bundle
-        IABRelation loader = aBRelationList[bundleName];
+        IABLoader iABLoader = aBRelationList[bundleName];
         // 先加载依赖
         string[] depences = GetDepences(bundleName);
 
-        loader.SetDepence(depences);
+        iABLoader.SetDepence(depences);
 
         for (int i = 0; i < depences.Length; i++)
         {
-            yield return LoadAssetBundleDepences(depences[i], bundleName, loader.GetProgress());
+            yield return LoadAssetBundleDepences(depences[i], bundleName);
         }
 
-        yield return loader.LoadAssetBundle();
+        yield return iABLoader.LoadBundle();
+
+        call();
     }
 
     // TODO 这里不大理解
@@ -315,36 +173,29 @@ public class IABManager{
     {
         if (aBRelationList.ContainsKey(bundleName))
         {
-            IABRelation iABRelation = aBRelationList[bundleName];
-            List<string> refrences = iABRelation.GetDepence();
+            IABLoader iABLoader = aBRelationList[bundleName];
+            List<string> refrences = iABLoader.GetDepence();
             for (int i = 0; i < refrences.Count; i++)
             {
                 if (aBRelationList.ContainsKey(refrences[i]))
                 {
-                    IABRelation refrence = aBRelationList[refrences[i]];
+                    IABLoader refrence = aBRelationList[refrences[i]];
                     if (refrence.RemoveRefrence(bundleName))
                     {
-                        DisposeBundle(refrence.getBundleName());
+                        DisposeBundle(refrence.BundleName);
                     }
                 }
             }
 
-            if (iABRelation.GetRefrenceBundleList().Count == 0)
+            if (iABLoader.GetRefrence().Count == 0)
             {
-                iABRelation.Dispose();
+                iABLoader.Dispose();
                 aBRelationList.Remove(bundleName);
             }
         }
     }
 
-    // TODO 如果是卸载bundle加资源 可以使用：UnLoadAsset(true)？
     public void DisposeAllBundleAndRes()
-    {
-        DisposeAllObj();
-        DisposeAllBundle();
-    }
-
-    public void DisposeAllBundle()
     {
         List<string> keys = new List<string>();
 
@@ -352,9 +203,31 @@ public class IABManager{
 
         for (int i = 0; i < aBRelationList.Count; i++)
         {
-            IABRelation iABRelation = aBRelationList[keys[i]];
-            iABRelation.Dispose();
+            IABLoader iABLoader = aBRelationList[keys[i]];
+            iABLoader.UnLoadBundleAndRes();
         }
         aBRelationList.Clear();
+    }
+
+    public void DisposeAllBundle()
+    {
+
+    }
+
+    public void DebugAsset(string bundleName)
+    {
+        if (aBRelationList[bundleName] != null)
+        {
+            IABLoader iABLoader = aBRelationList[bundleName];
+            iABLoader.DebugAsset();
+        }
+    }
+
+    public void DebugAllAsset()
+    {
+        foreach (string bundleName in aBRelationList.Keys)
+        {
+            DebugAsset(bundleName);
+        }
     }
 }

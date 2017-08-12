@@ -1,39 +1,60 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+
 public class IABResLoader:IDisposable{
     
+    private List<UnityEngine.Object> loadResObjs;
+
+    private IABLoader iABLoader;
+
     private AssetBundle ABRes;
 
-    public IABResLoader(AssetBundle tmpBundle)
+    public IABResLoader(IABLoader tmpIABLoader)
     {
-        ABRes = tmpBundle;
+        iABLoader = tmpIABLoader;
+        ABRes = iABLoader._AssetBundle;
     }
 
     // 加载单个assetbundle
-    public UnityEngine.Object this[string resName]
+    public UnityEngine.Object GetBundleRes(string resName)
     {
-        get
+        for (int i = 0; i < loadResObjs.Count; i++)
         {
-            UnityEngine.Object asset = null;
-            if (ABRes != null & ABRes.Contains(resName))
+            UnityEngine.Object res = loadResObjs[i];
+            if (resName == loadResObjs[i].name)
             {
-                asset = ABRes.LoadAsset(resName);
+                return res;
             }
-            else
+        }
+        return null;
+    }
+
+    public void LoadBundleRes(string resName)
+    {
+        bool isIn = false;
+        for (int i = 0; i < loadResObjs.Count; i++)
+        {
+            if (resName == loadResObjs[i].name)
             {
-                Debug.Log("res not contain " + resName);
+                isIn = true;
+                break;
             }
-            return asset;
+        }
+        if (!isIn)
+        {
+            loadResObjs.Add(ABRes.LoadAsset(resName));
         }
     }
 
-    public UnityEngine.Object[] LoadResources(string resName)
+    public UnityEngine.Object[] LoadAssetWithSubAssets(string resName)
     {
         UnityEngine.Object[] asset = null;
         if (ABRes != null & ABRes.Contains(resName))
         {
             asset = ABRes.LoadAssetWithSubAssets(resName);
+            loadResObjs.AddRange(asset);
         }
         else
         {
@@ -42,16 +63,37 @@ public class IABResLoader:IDisposable{
         return asset;
     }
 
+    public List<UnityEngine.Object> GetLoadResObjs()
+    {
+        return loadResObjs;
+    }
+
+    public void UnLoadAllRes()
+    {
+        for (int i = 0; i < loadResObjs.Count; i++)
+        {
+            UnLoadRes(loadResObjs[i]);
+        }
+        loadResObjs = null;
+    }
+
     // 释放已经加载出来的资源
     public void UnLoadRes(UnityEngine.Object resObj)
     {
-        Resources.UnloadAsset(resObj);
+        if (loadResObjs.Contains(resObj))
+        {
+            loadResObjs.Remove(resObj);
+            Resources.UnloadAsset(resObj);
+        }
+        else
+        {
+            Debug.Log(iABLoader.BundleName + " not resObj " + resObj.name);
+        }
     }
 
-    // 卸载assetbundle(如果忘记释放) TODO 这里并没有使用true
     public void Dispose()
     {
-        ABRes.Unload(false);
+        Debug.Log("IABResLoader Dispose");
     }
 
     public void DebugAllRes()
